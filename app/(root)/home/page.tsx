@@ -9,6 +9,7 @@ import Image from 'next/image';
 import { MovieRecommendations } from '@/features/movie/components/MovieRecommendations';
 import { useMemo } from 'react';
 import { NowPlayingMoviesSection } from '@/features/movie/components/NowPlayingMoviesSection';
+import { FavoriteMoviesSection } from '@/features/movie/components/FavoriteMoviesSection';
 
 export default function HomePage() {
   const { data } = useTrendingMovies();
@@ -83,7 +84,10 @@ export default function HomePage() {
           <h2 className="text-2xl font-bold mb-4">Derniers ajouts</h2>
           <NowPlayingMoviesSection />
         </section>
-      
+        <section className="mt-16">
+          <h2 className="text-2xl font-bold mb-4">Mes favoris</h2>
+          <FavoriteMoviesSection />
+        </section>
       </div>
     </main>
   );
