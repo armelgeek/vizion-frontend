@@ -5,8 +5,7 @@ import { Skeleton } from '@/shared/components/atoms/ui/skeleton';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useQueryState } from 'nuqs';
-import { genres } from '@/features/movie/genres.mock';
-import { useRef } from 'react';
+import { MovieFilters } from '@/features/movie/components/MovieFilters';
 
 export default function MoviesPage() {
   const [search, setSearch] = useQueryState('q', { defaultValue: '' });
@@ -19,7 +18,6 @@ export default function MoviesPage() {
     serialize: (v) => v,
   });
   const [minRating, setMinRating] = useQueryState('minRating', { defaultValue: '' });
-  const sliderRef = useRef<HTMLInputElement>(null);
 
   const params = {
     page,
@@ -61,59 +59,7 @@ export default function MoviesPage() {
         <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded">Rechercher</button>
       </form>
       {/* Filtres avancés */}
-      <form className="flex flex-wrap gap-4 mb-6 items-center" onSubmit={e => e.preventDefault()} aria-label="Filtres films">
-        <label htmlFor="year" className="text-xs text-gray-600">Année</label>
-        <input
-          id="year"
-          type="number"
-          min="1900"
-          max={new Date().getFullYear()}
-          value={year}
-          onChange={e => { setYear(e.target.value); setPage(1); }}
-          placeholder="Année"
-          className="border rounded px-2 py-1 text-xs w-20"
-          aria-label="Filtrer par année"
-        />
-        <label htmlFor="genres" className="text-xs text-gray-600">Genres</label>
-        <select
-          id="genres"
-          multiple
-          value={genresSelected ? genresSelected.split(',') : []}
-          onChange={e => {
-            const values = Array.from(e.target.selectedOptions).map(opt => opt.value);
-            setGenresSelected(values.join(','));
-            setPage(1);
-          }}
-          className="border rounded px-2 py-1 text-xs min-w-[120px]"
-          aria-label="Filtrer par genres"
-        >
-          {genres.map((g) => (
-            <option key={g.id} value={g.id}>{g.name}</option>
-          ))}
-        </select>
-        <label htmlFor="minRatingSlider" className="text-xs text-gray-600">Note min.</label>
-        <input
-          id="minRatingSlider"
-          type="range"
-          min="0"
-          max="10"
-          step="0.1"
-          value={minRating || 0}
-          onChange={e => { setMinRating(e.target.value); setPage(1); }}
-          className="accent-yellow-500 w-32"
-          ref={sliderRef}
-          aria-label="Filtrer par note minimale (slider)"
-        />
-        <span className="text-xs text-gray-700 w-8 text-center">{minRating || 0}</span>
-        <button
-          type="button"
-          onClick={handleResetFilters}
-          className="text-xs px-2 py-1 rounded bg-gray-100 border border-gray-300 hover:bg-gray-200 ml-2"
-          aria-label="Réinitialiser les filtres"
-        >
-          Réinitialiser
-        </button>
-      </form>
+      <MovieFilters onReset={handleResetFilters} />
       {/* Résultats */}
       {movies && (
         <div className="mb-2 text-xs text-gray-600">{movies.length} résultat{movies.length > 1 ? 's' : ''} affiché{movies.length > 1 ? 's' : ''}</div>
