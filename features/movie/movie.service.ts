@@ -136,4 +136,15 @@ export class MovieService {
     if (!res.ok) throw new Error('Aucun top film trouvé');
     return res.json();
   }
+
+  static async getNowPlaying() {
+    const res = await fetch(`${TMDB_API_URL}/movie/now_playing?api_key=${TMDB_API_KEY}`, {
+      headers: {
+        Authorization: `Bearer ${TMDB_API_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+    });
+    if (!res.ok) throw new Error('Aucun film récent trouvé');
+    return res.json();
+  }
 }

@@ -85,6 +85,10 @@ export default function MovieDetailPage({ params }: { params: Promise<{ id: stri
           </a>
         </div>
       </div>
+      <div className="max-w-3xl mx-auto mt-12">
+        <h2 className="text-xl font-bold mb-4">Bande-annonce</h2>
+        <MovieVideosSection movieId={movie.id} />
+      </div>
       <div className="max-w-3xl mx-auto mt-8">
         <h2 className="text-xl font-bold mb-4">Acteurs principaux</h2>
         {loadingCredits ? (
@@ -117,18 +121,12 @@ export default function MovieDetailPage({ params }: { params: Promise<{ id: stri
           <div className="text-gray-500">Aucun acteur trouvé.</div>
         )}
       </div>
+      
       <div className="max-w-3xl mx-auto mt-12">
         <h2 className="text-xl font-bold mb-4">Recommandations</h2>
         <MovieRecommendations movieId={Number(movie.id)} />
       </div>
-      <div className="max-w-3xl mx-auto mt-12">
-        <h2 className="text-xl font-bold mb-4">Tendances</h2>
-        <TrendingMoviesSection />
-      </div>
-      <div className="max-w-3xl mx-auto mt-12">
-        <h2 className="text-xl font-bold mb-4">Bande-annonce</h2>
-        <MovieVideosSection movieId={movie.id} />
-      </div>
+      
       <div className="max-w-3xl mx-auto mt-12">
         <h2 className="text-xl font-bold mb-4">Similaires</h2>
         <MovieSimilarSection movieId={movie.id} />

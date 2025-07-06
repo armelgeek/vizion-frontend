@@ -6,13 +6,20 @@ import { UpcomingMoviesSection } from '@/features/movie/components/UpcomingMovie
 import { TopRatedMoviesSection } from '@/features/movie/components/TopRatedMoviesSection';
 import { useTrendingMovies } from '@/features/movie/hooks/use-trending-movies';
 import Image from 'next/image';
+import { MovieRecommendations } from '@/features/movie/components/MovieRecommendations';
+import { useMemo } from 'react';
+import { NowPlayingMoviesSection } from '@/features/movie/components/NowPlayingMoviesSection';
 
 export default function HomePage() {
-  const { data, isLoading } = useTrendingMovies();
-  // Sélectionne un film tendance au hasard pour le hero
+  const { data } = useTrendingMovies();
   const heroMovie = data?.results?.length
     ? data.results[Math.floor(Math.random() * data.results.length)]
     : null;
+  const recommendedMovieId = useMemo(() => {
+    if (!data?.results?.length) return null;
+    const others = data.results.filter((m) => m.id !== heroMovie?.id);
+    return others.length ? others[Math.floor(Math.random() * others.length)].id : null;
+  }, [data, heroMovie]);
 
   return (
     <main className="min-h-screen bg-gray-50">
@@ -64,6 +71,19 @@ export default function HomePage() {
           <h2 className="text-2xl font-bold mb-4">Top Films</h2>
           <TopRatedMoviesSection />
         </section>
+        <section className="mt-16">
+          <h2 className="text-2xl font-bold mb-4">Films recommandés</h2>
+          {recommendedMovieId ? (
+            <MovieRecommendations movieId={recommendedMovieId} />
+          ) : (
+            <div className="h-48 bg-gray-100 rounded-xl animate-pulse" />
+          )}
+        </section>
+        <section className="mt-16">
+          <h2 className="text-2xl font-bold mb-4">Derniers ajouts</h2>
+          <NowPlayingMoviesSection />
+        </section>
+      
       </div>
     </main>
   );
