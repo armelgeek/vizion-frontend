@@ -1,13 +1,20 @@
 "use client"
 
+import { use } from 'react';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { useMovieDetail } from '@/features/movie/hooks/use-movie-detail';
 import { Skeleton } from '@/shared/components/atoms/ui/skeleton';
 import Image from 'next/image';
 
-export default function MovieDetailPage({ params }: { params: { id: string } }) {
-  const { data: movie, isLoading, error } = useMovieDetail(params.id);
+export default function MovieDetailPage({ params }: { params: Promise<{ id: string }> | { id: string } }) {
+  let actualParams: { id: string };
+  if (typeof (params as { id: string }).id === 'string') {
+    actualParams = params as { id: string };
+  } else {
+    actualParams = use(params as Promise<{ id: string }>);
+  }
+  const { data: movie, isLoading, error } = useMovieDetail(actualParams.id);
   const router = useRouter();
 
   useEffect(() => {
