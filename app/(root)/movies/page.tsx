@@ -1,20 +1,27 @@
 "use client"
 
-import { useState } from 'react';
-import { usePopularMovies, useSearchMovies } from '@/features/movie/hooks/use-movie';
+import { useDiscoverMovies } from '@/features/movie/hooks/use-movie-discover';
 import { Skeleton } from '@/shared/components/atoms/ui/skeleton';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useQueryState } from 'nuqs';
+import { genres } from '@/features/movie/genres.mock';
 
 export default function MoviesPage() {
   const [search, setSearch] = useQueryState('q', { defaultValue: '' });
   const [page, setPage] = useQueryState('page', { defaultValue: 1, history: 'push', parse: Number, serialize: String });
-  const query = search.trim();
-  const isSearching = !!query;
-
-  const { data: popular, isLoading: loadingPopular, error: errorPopular } = usePopularMovies(page);
-  const { data: searchResults, isLoading: loadingSearch, error: errorSearch } = useSearchMovies(query, page);
+  const [year, setYear] = useQueryState('year', { defaultValue: '' });
+  const [genre, setGenre] = useQueryState('genre', { defaultValue: '' });
+  const [minRating, setMinRating] = useQueryState('minRating', { defaultValue: '' });
+  
+  const params = {
+    page,
+    year: year || undefined,
+    with_genres: genre || undefined,
+    'vote_average.gte': minRating || undefined,
+    query: search.trim() || undefined,
+  };
+  const { data: movies, isLoading, error } = useDiscoverMovies(params);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,12 +29,15 @@ export default function MoviesPage() {
     setSearch(search.trim());
   };
 
+  const handleResetFilters = () => {
+    setYear('');
+    setGenre('');
+    setMinRating('');
+    setPage(1);
+  };
+
   const handlePrev = () => setPage((p) => Math.max(1, (typeof p === 'number' ? p : 1) - 1));
   const handleNext = () => setPage((p) => (typeof p === 'number' ? p + 1 : 2));
-
-  const movies = isSearching ? searchResults : popular;
-  const isLoading = isSearching ? loadingSearch : loadingPopular;
-  const error = isSearching ? errorSearch : errorPopular;
 
   return (
     <div className="p-4">
@@ -39,9 +49,63 @@ export default function MoviesPage() {
           placeholder="Rechercher un film..."
           className="border rounded px-3 py-2 w-full max-w-md"
           aria-label="Rechercher un film"
+          autoFocus
         />
         <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded">Rechercher</button>
       </form>
+      {/* Filtres avancés */}
+      <form className="flex flex-wrap gap-4 mb-6 items-center" onSubmit={e => e.preventDefault()} aria-label="Filtres films">
+        <label htmlFor="year" className="text-xs text-gray-600">Année</label>
+        <input
+          id="year"
+          type="number"
+          min="1900"
+          max={new Date().getFullYear()}
+          value={year}
+          onChange={e => { setYear(e.target.value); setPage(1); }}
+          placeholder="Année"
+          className="border rounded px-2 py-1 text-xs w-20"
+          aria-label="Filtrer par année"
+        />
+        <label htmlFor="genre" className="text-xs text-gray-600">Genre</label>
+        <select
+          id="genre"
+          value={genre}
+          onChange={e => { setGenre(e.target.value); setPage(1); }}
+          className="border rounded px-2 py-1 text-xs"
+          aria-label="Filtrer par genre"
+        >
+          <option value="">Tous les genres</option>
+          {genres.map((g) => (
+            <option key={g.id} value={g.id}>{g.name}</option>
+          ))}
+        </select>
+        <label htmlFor="minRating" className="text-xs text-gray-600">Note min.</label>
+        <input
+          id="minRating"
+          type="number"
+          min="0"
+          max="10"
+          step="0.1"
+          value={minRating}
+          onChange={e => { setMinRating(e.target.value); setPage(1); }}
+          placeholder="Note min."
+          className="border rounded px-2 py-1 text-xs w-16"
+          aria-label="Filtrer par note minimale"
+        />
+        <button
+          type="button"
+          onClick={handleResetFilters}
+          className="text-xs px-2 py-1 rounded bg-gray-100 border border-gray-300 hover:bg-gray-200 ml-2"
+          aria-label="Réinitialiser les filtres"
+        >
+          Réinitialiser
+        </button>
+      </form>
+      {/* Résultats */}
+      {movies && (
+        <div className="mb-2 text-xs text-gray-600">{movies.length} résultat{movies.length > 1 ? 's' : ''} affiché{movies.length > 1 ? 's' : ''}</div>
+      )}
       {isLoading ? (
         <Skeleton className="h-96 w-full" />
       ) : error ? (
