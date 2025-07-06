@@ -1,15 +1,15 @@
 "use client"
 
-import { useDiscoverMovies } from '@/features/movie/hooks/use-movie-discover';
+import { useDiscoverMoviesInfinite } from '@/features/movie/hooks/use-movie-discover-infinite';
 import { Skeleton } from '@/shared/components/atoms/ui/skeleton';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useQueryState } from 'nuqs';
 import { MovieFilters } from '@/features/movie/components/MovieFilters';
+import { useEffect, useRef } from 'react';
 
 export default function MoviesPage() {
   const [search, setSearch] = useQueryState('q', { defaultValue: '' });
-  const [page, setPage] = useQueryState('page', { defaultValue: 1, history: 'push', parse: Number, serialize: String });
   const [year, setYear] = useQueryState('year', { defaultValue: '' });
   const [genresSelected, setGenresSelected] = useQueryState('genres', {
     defaultValue: '',
@@ -20,17 +20,37 @@ export default function MoviesPage() {
   const [minRating, setMinRating] = useQueryState('minRating', { defaultValue: '' });
 
   const params = {
-    page,
     year: year || undefined,
     with_genres: genresSelected ? genresSelected : undefined,
     'vote_average.gte': minRating || undefined,
     query: search.trim() || undefined,
   };
-  const { data: movies, isLoading, error } = useDiscoverMovies(params);
+  const {
+    data,
+    isLoading,
+    error,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useDiscoverMoviesInfinite(params);
+  const movies = data ? data.pages.flat() : [];
+  const loaderRef = useRef<HTMLDivElement>(null);
+
+  // Infinite scroll observer
+  useEffect(() => {
+    if (!hasNextPage || isLoading) return;
+    const node = loaderRef.current;
+    const observer = new window.IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting) {
+        fetchNextPage();
+      }
+    }, { threshold: 1 });
+    if (node) observer.observe(node);
+    return () => { if (node) observer.unobserve(node); };
+  }, [fetchNextPage, hasNextPage, isLoading]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setPage(1);
     setSearch(search.trim());
   };
 
@@ -38,11 +58,7 @@ export default function MoviesPage() {
     setYear('');
     setGenresSelected('');
     setMinRating('');
-    setPage(1);
   };
-
-  const handlePrev = () => setPage((p) => Math.max(1, (typeof p === 'number' ? p : 1) - 1));
-  const handleNext = () => setPage((p) => (typeof p === 'number' ? p + 1 : 2));
 
   return (
     <div className="p-4">
@@ -58,9 +74,7 @@ export default function MoviesPage() {
         />
         <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded">Rechercher</button>
       </form>
-      {/* Filtres avancés */}
       <MovieFilters onReset={handleResetFilters} />
-      {/* Résultats */}
       {movies && (
         <div className="mb-2 text-xs text-gray-600">{movies.length} résultat{movies.length > 1 ? 's' : ''} affiché{movies.length > 1 ? 's' : ''}</div>
       )}
@@ -96,22 +110,11 @@ export default function MoviesPage() {
               <div className="col-span-full text-center text-gray-500">Aucun film trouvé.</div>
             )}
           </div>
-          <div className="flex justify-center gap-4 mt-8">
-            <button
-              onClick={handlePrev}
-              disabled={page === 1}
-              className="px-4 py-2 rounded bg-gray-200 text-gray-700 disabled:opacity-50"
-            >
-              Précédent
-            </button>
-            <span className="px-4 py-2 text-gray-700">Page {page}</span>
-            <button
-              onClick={handleNext}
-              className="px-4 py-2 rounded bg-gray-200 text-gray-700"
-              disabled={movies?.length === 0}
-            >
-              Suivant
-            </button>
+          <div ref={loaderRef} className="flex justify-center items-center mt-8 min-h-[40px]">
+            {isFetchingNextPage && <Skeleton className="h-10 w-10" />}
+            {!hasNextPage && !isLoading && movies.length > 0 && (
+              <span className="text-xs text-gray-400">Fin de la liste</span>
+            )}
           </div>
         </>
       )}
