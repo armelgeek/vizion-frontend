@@ -37,4 +37,15 @@ export class MovieService {
     if (!res.ok) throw new Error('Film introuvable');
     return res.json();
   }
+
+  static async getCredits(id: string) {
+    const res = await fetch(`${TMDB_API_URL}/movie/${id}/credits?api_key=${TMDB_API_KEY}`, {
+      headers: {
+        Authorization: `Bearer ${TMDB_API_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+    });
+    if (!res.ok) throw new Error('Casting introuvable');
+    return res.json();
+  }
 }
