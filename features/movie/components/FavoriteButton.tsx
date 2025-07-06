@@ -27,7 +27,7 @@ export function FavoriteButton({ movieId }: { movieId: number }) {
       aria-label={isFav ? 'Retirer des favoris' : 'Ajouter aux favoris'}
       onClick={toggleFav}
       className={
-        'absolute top-2 right-2 z-10 rounded-full p-1 ' +
+        'absolute top-5 right-5 z-10 w-12 h-12 rounded-full p-1 ' +
         (isFav ? 'bg-yellow-300 text-yellow-900' : 'bg-white text-gray-400 hover:text-yellow-500')
       }
     >
