@@ -48,4 +48,26 @@ export class MovieService {
     if (!res.ok) throw new Error('Casting introuvable');
     return res.json();
   }
+
+  static async getPersonDetail(id: string) {
+    const res = await fetch(`${TMDB_API_URL}/person/${id}?api_key=${TMDB_API_KEY}`, {
+      headers: {
+        Authorization: `Bearer ${TMDB_API_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+    });
+    if (!res.ok) throw new Error('Acteur introuvable');
+    return res.json();
+  }
+
+  static async getPersonCredits(id: string) {
+    const res = await fetch(`${TMDB_API_URL}/person/${id}/combined_credits?api_key=${TMDB_API_KEY}`, {
+      headers: {
+        Authorization: `Bearer ${TMDB_API_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+    });
+    if (!res.ok) throw new Error('Filmographie introuvable');
+    return res.json();
+  }
 }

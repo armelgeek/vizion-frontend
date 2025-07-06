@@ -7,6 +7,7 @@ import { useMovieDetail } from '@/features/movie/hooks/use-movie-detail';
 import { useMovieCredits } from '@/features/movie/hooks/use-movie-credits';
 import { Skeleton } from '@/shared/components/atoms/ui/skeleton';
 import Image from 'next/image';
+import Link from 'next/link';
 
 export default function MovieDetailPage({ params }: { params: Promise<{ id: string }> | { id: string } }) {
   let actualParams: { id: string };
@@ -86,7 +87,11 @@ export default function MovieDetailPage({ params }: { params: Promise<{ id: stri
         ) : credits?.cast?.length ? (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {credits.cast.slice(0, 8).map((actor: any) => (
-              <div key={actor.cast_id || actor.id} className="flex flex-col items-center bg-gray-50 rounded p-2 shadow-sm">
+              <Link
+                key={actor.cast_id || actor.id}
+                href={`/movies/person/${actor.id}`}
+                className="flex flex-col items-center bg-gray-50 rounded p-2 shadow-sm hover:scale-105 transition-transform"
+              >
                 {actor.profile_path ? (
                   <Image
                     src={`https://image.tmdb.org/t/p/w185${actor.profile_path}`}
@@ -100,7 +105,7 @@ export default function MovieDetailPage({ params }: { params: Promise<{ id: stri
                 )}
                 <div className="font-semibold text-center mt-1 text-sm">{actor.name}</div>
                 <div className="text-xs text-gray-500 text-center">{actor.character}</div>
-              </div>
+              </Link>
             ))}
           </div>
         ) : (
