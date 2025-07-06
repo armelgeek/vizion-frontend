@@ -6,18 +6,25 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useQueryState } from 'nuqs';
 import { genres } from '@/features/movie/genres.mock';
+import { useRef } from 'react';
 
 export default function MoviesPage() {
   const [search, setSearch] = useQueryState('q', { defaultValue: '' });
   const [page, setPage] = useQueryState('page', { defaultValue: 1, history: 'push', parse: Number, serialize: String });
   const [year, setYear] = useQueryState('year', { defaultValue: '' });
-  const [genre, setGenre] = useQueryState('genre', { defaultValue: '' });
+  const [genresSelected, setGenresSelected] = useQueryState('genres', {
+    defaultValue: '',
+    history: 'push',
+    parse: (v) => v,
+    serialize: (v) => v,
+  });
   const [minRating, setMinRating] = useQueryState('minRating', { defaultValue: '' });
-  
+  const sliderRef = useRef<HTMLInputElement>(null);
+
   const params = {
     page,
     year: year || undefined,
-    with_genres: genre || undefined,
+    with_genres: genresSelected ? genresSelected : undefined,
     'vote_average.gte': minRating || undefined,
     query: search.trim() || undefined,
   };
@@ -31,7 +38,7 @@ export default function MoviesPage() {
 
   const handleResetFilters = () => {
     setYear('');
-    setGenre('');
+    setGenresSelected('');
     setMinRating('');
     setPage(1);
   };
@@ -67,32 +74,37 @@ export default function MoviesPage() {
           className="border rounded px-2 py-1 text-xs w-20"
           aria-label="Filtrer par année"
         />
-        <label htmlFor="genre" className="text-xs text-gray-600">Genre</label>
+        <label htmlFor="genres" className="text-xs text-gray-600">Genres</label>
         <select
-          id="genre"
-          value={genre}
-          onChange={e => { setGenre(e.target.value); setPage(1); }}
-          className="border rounded px-2 py-1 text-xs"
-          aria-label="Filtrer par genre"
+          id="genres"
+          multiple
+          value={genresSelected ? genresSelected.split(',') : []}
+          onChange={e => {
+            const values = Array.from(e.target.selectedOptions).map(opt => opt.value);
+            setGenresSelected(values.join(','));
+            setPage(1);
+          }}
+          className="border rounded px-2 py-1 text-xs min-w-[120px]"
+          aria-label="Filtrer par genres"
         >
-          <option value="">Tous les genres</option>
           {genres.map((g) => (
             <option key={g.id} value={g.id}>{g.name}</option>
           ))}
         </select>
-        <label htmlFor="minRating" className="text-xs text-gray-600">Note min.</label>
+        <label htmlFor="minRatingSlider" className="text-xs text-gray-600">Note min.</label>
         <input
-          id="minRating"
-          type="number"
+          id="minRatingSlider"
+          type="range"
           min="0"
           max="10"
           step="0.1"
-          value={minRating}
+          value={minRating || 0}
           onChange={e => { setMinRating(e.target.value); setPage(1); }}
-          placeholder="Note min."
-          className="border rounded px-2 py-1 text-xs w-16"
-          aria-label="Filtrer par note minimale"
+          className="accent-yellow-500 w-32"
+          ref={sliderRef}
+          aria-label="Filtrer par note minimale (slider)"
         />
+        <span className="text-xs text-gray-700 w-8 text-center">{minRating || 0}</span>
         <button
           type="button"
           onClick={handleResetFilters}
