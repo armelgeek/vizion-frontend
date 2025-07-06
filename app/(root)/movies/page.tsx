@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { usePopularMovies, useSearchMovies } from '@/features/movie/hooks/use-movie';
 import { Skeleton } from '@/shared/components/atoms/ui/skeleton';
 import Image from 'next/image';
+import Link from 'next/link';
 
 export default function MoviesPage() {
   const [search, setSearch] = useState('');
@@ -42,7 +43,11 @@ export default function MoviesPage() {
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
           {movies?.length ? movies.map((movie) => (
-            <div key={movie.id} className="bg-white rounded shadow p-2 flex flex-col items-center">
+            <Link
+              key={movie.id}
+              href={`/movies/${movie.id}`}
+              className="bg-white rounded shadow p-2 flex flex-col items-center hover:scale-105 transition-transform"
+            >
               {movie.poster_path ? (
                 <Image
                   src={`https://image.tmdb.org/t/p/w300${movie.poster_path}`}
@@ -57,7 +62,7 @@ export default function MoviesPage() {
               <div className="font-semibold text-center mt-2">{movie.title}</div>
               <div className="text-xs text-gray-500">{movie.release_date}</div>
               <div className="text-sm text-yellow-500">⭐ {movie.vote_average}</div>
-            </div>
+            </Link>
           )) : (
             <div className="col-span-full text-center text-gray-500">Aucun film trouvé.</div>
           )}

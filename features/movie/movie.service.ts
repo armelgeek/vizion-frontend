@@ -26,4 +26,15 @@ export class MovieService {
     const data = await res.json();
     return data.results;
   }
+
+  static async getDetail(id: string) {
+    const res = await fetch(`${TMDB_API_URL}/movie/${id}?api_key=${TMDB_API_KEY}`, {
+      headers: {
+        Authorization: `Bearer ${TMDB_API_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+    });
+    if (!res.ok) throw new Error('Film introuvable');
+    return res.json();
+  }
 }
