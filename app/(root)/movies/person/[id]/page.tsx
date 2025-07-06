@@ -7,6 +7,7 @@ import { usePersonDetail } from '@/features/movie/hooks/use-person-detail';
 import { Skeleton } from '@/shared/components/atoms/ui/skeleton';
 import Image from 'next/image';
 import { usePersonCredits } from '@/features/movie/hooks/use-person-credits';
+import { usePersonCreditsPaginated } from '@/features/movie/hooks/use-person-credits-paginated';
 import Link from 'next/link';
 
 export default function PersonDetailPage({ params }: { params: Promise<{ id: string }> | { id: string } }) {
@@ -18,6 +19,8 @@ export default function PersonDetailPage({ params }: { params: Promise<{ id: str
   }
   const { data: person, isLoading, error } = usePersonDetail(actualParams.id);
   const { data: credits, isLoading: loadingCredits } = usePersonCredits(actualParams.id);
+  const castPaginated = usePersonCreditsPaginated(actualParams.id, 'cast');
+  const crewPaginated = usePersonCreditsPaginated(actualParams.id, 'crew');
   const router = useRouter();
 
   useEffect(() => {
@@ -160,44 +163,55 @@ export default function PersonDetailPage({ params }: { params: Promise<{ id: str
             ) : credits && (credits.cast?.length || credits.crew?.length) ? (
               <div className="space-y-4">
                 {/* Acteur */}
-                {credits.cast?.length ? (
+                {castPaginated.data?.items?.length ? (
                   <div>
                     <h3 className="font-semibold mb-2 text-blue-700">Comme acteur/trice</h3>
                     <ul className="space-y-2 max-h-72 overflow-y-auto pr-2">
-                      {(credits.cast as CreditCast[])
-                        .sort((a, b) => getCreditDate(b).localeCompare(getCreditDate(a)))
-                        .map((item: CreditCast) => (
-                          <li key={item.id} className="flex items-center gap-3">
-                            {item.poster_path ? (
-                              <Image
-                                src={`https://image.tmdb.org/t/p/w92${item.poster_path}`}
-                                alt={item.title || item.name || ''}
-                                width={46}
-                                height={69}
-                                className="rounded object-cover"
-                              />
-                            ) : (
-                              <div className="w-[46px] h-[69px] bg-gray-200 flex items-center justify-center text-gray-400 text-xs">No image</div>
-                            )}
-                            <div>
-                              <Link href={item.media_type === 'movie' ? `/movies/${item.id}` : '#'} className="font-semibold hover:underline">
-                                {item.title || item.name}
-                              </Link>
-                              {getCreditDate(item) && <span className="ml-2 text-xs text-gray-500">({getCreditDate(item)})</span>}
-                              {item.character && <span className="ml-2 text-xs text-gray-500">{item.character}</span>}
-                            </div>
-                          </li>
-                        ))}
+                      {castPaginated.data.paginated.map((item: CreditCast) => (
+                        <li key={item.id} className="flex items-center gap-3">
+                          {item.poster_path ? (
+                            <Image
+                              src={`https://image.tmdb.org/t/p/w92${item.poster_path}`}
+                              alt={item.title || item.name || ''}
+                              width={46}
+                              height={69}
+                              className="rounded object-cover"
+                            />
+                          ) : (
+                            <div className="w-[46px] h-[69px] bg-gray-200 flex items-center justify-center text-gray-400 text-xs">No image</div>
+                          )}
+                          <div>
+                            <Link href={item.media_type === 'movie' ? `/movies/${item.id}` : '#'} className="font-semibold hover:underline">
+                              {item.title || item.name}
+                            </Link>
+                            {getCreditDate(item) && <span className="ml-2 text-xs text-gray-500">({getCreditDate(item)})</span>}
+                            {item.character && <span className="ml-2 text-xs text-gray-500">{item.character}</span>}
+                          </div>
+                        </li>
+                      ))}
                     </ul>
+                    <div className="flex justify-center gap-2 mt-2">
+                      <button
+                        onClick={() => castPaginated.setPage((p: number) => Math.max(1, p - 1))}
+                        disabled={castPaginated.page === 1}
+                        className="px-2 py-1 rounded bg-gray-200 text-gray-700 disabled:opacity-50 text-xs"
+                      >Précédent</button>
+                      <span className="px-2 py-1 text-gray-700 text-xs">Page {castPaginated.page}</span>
+                      <button
+                        onClick={() => castPaginated.setPage((p: number) => p + 1)}
+                        disabled={castPaginated.data.paginated.length < 20}
+                        className="px-2 py-1 rounded bg-gray-200 text-gray-700 text-xs"
+                      >Suivant</button>
+                    </div>
                   </div>
                 ) : null}
-                {credits.crew?.filter((c: CreditCrew) => c.job === 'Director').length ? (
+                {/* Réalisateur */}
+                {crewPaginated.data?.items?.filter((c: CreditCrew) => c.job === 'Director').length ? (
                   <div>
                     <h3 className="font-semibold mb-2 mt-4 text-blue-700">Comme réalisateur/trice</h3>
                     <ul className="space-y-2 max-h-72 overflow-y-auto pr-2">
-                      {(credits.crew as CreditCrew[])
+                      {crewPaginated.data.paginated
                         .filter((c: CreditCrew) => c.job === 'Director')
-                        .sort((a: CreditCrew, b: CreditCrew) => getCreditDate(b).localeCompare(getCreditDate(a)))
                         .map((item: CreditCrew) => (
                           <li key={item.id} className="flex items-center gap-3">
                             <Link href={item.media_type === 'movie' ? `/movies/${item.id}` : '#'} className="font-semibold hover:underline">
@@ -207,6 +221,19 @@ export default function PersonDetailPage({ params }: { params: Promise<{ id: str
                           </li>
                         ))}
                     </ul>
+                    <div className="flex justify-center gap-2 mt-2">
+                      <button
+                        onClick={() => crewPaginated.setPage((p: number) => Math.max(1, p - 1))}
+                        disabled={crewPaginated.page === 1}
+                        className="px-2 py-1 rounded bg-gray-200 text-gray-700 disabled:opacity-50 text-xs"
+                      >Précédent</button>
+                      <span className="px-2 py-1 text-gray-700 text-xs">Page {crewPaginated.page}</span>
+                      <button
+                        onClick={() => crewPaginated.setPage((p: number) => p + 1)}
+                        disabled={crewPaginated.data.paginated.length < 20}
+                        className="px-2 py-1 rounded bg-gray-200 text-gray-700 text-xs"
+                      >Suivant</button>
+                    </div>
                   </div>
                 ) : null}
               </div>

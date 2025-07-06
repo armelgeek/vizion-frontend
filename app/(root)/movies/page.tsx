@@ -5,11 +5,12 @@ import { usePopularMovies, useSearchMovies } from '@/features/movie/hooks/use-mo
 import { Skeleton } from '@/shared/components/atoms/ui/skeleton';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useQueryState } from 'nuqs';
 
 export default function MoviesPage() {
-  const [search, setSearch] = useState('');
-  const [query, setQuery] = useState('');
-  const [page, setPage] = useState(1);
+  const [search, setSearch] = useQueryState('q', { defaultValue: '' });
+  const [page, setPage] = useQueryState('page', { defaultValue: 1, history: 'push', parse: Number, serialize: String });
+  const query = search.trim();
   const isSearching = !!query;
 
   const { data: popular, isLoading: loadingPopular, error: errorPopular } = usePopularMovies(page);
@@ -17,12 +18,12 @@ export default function MoviesPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setQuery(search.trim());
     setPage(1);
+    setSearch(search.trim());
   };
 
-  const handlePrev = () => setPage((p) => Math.max(1, p - 1));
-  const handleNext = () => setPage((p) => p + 1);
+  const handlePrev = () => setPage((p) => Math.max(1, (typeof p === 'number' ? p : 1) - 1));
+  const handleNext = () => setPage((p) => (typeof p === 'number' ? p + 1 : 2));
 
   const movies = isSearching ? searchResults : popular;
   const isLoading = isSearching ? loadingSearch : loadingPopular;
