@@ -114,4 +114,26 @@ export class MovieService {
     if (!res.ok) throw new Error('Aucun film similaire trouvé');
     return res.json();
   }
+
+  static async getUpcoming() {
+    const res = await fetch(`${TMDB_API_URL}/movie/upcoming?api_key=${TMDB_API_KEY}`, {
+      headers: {
+        Authorization: `Bearer ${TMDB_API_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+    });
+    if (!res.ok) throw new Error('Aucun film à venir trouvé');
+    return res.json();
+  }
+
+  static async getTopRated() {
+    const res = await fetch(`${TMDB_API_URL}/movie/top_rated?api_key=${TMDB_API_KEY}`, {
+      headers: {
+        Authorization: `Bearer ${TMDB_API_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+    });
+    if (!res.ok) throw new Error('Aucun top film trouvé');
+    return res.json();
+  }
 }
