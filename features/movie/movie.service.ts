@@ -70,4 +70,48 @@ export class MovieService {
     if (!res.ok) throw new Error('Filmographie introuvable');
     return res.json();
   }
+
+  static async getRecommendations(id: string | number) {
+    const res = await fetch(`${TMDB_API_URL}/movie/${id}/recommendations?api_key=${TMDB_API_KEY}`, {
+      headers: {
+        Authorization: `Bearer ${TMDB_API_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+    });
+    if (!res.ok) throw new Error('Aucune recommandation trouvée');
+    return res.json();
+  }
+
+  static async getTrending() {
+    const res = await fetch(`${TMDB_API_URL}/trending/movie/week?api_key=${TMDB_API_KEY}`, {
+      headers: {
+        Authorization: `Bearer ${TMDB_API_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+    });
+    if (!res.ok) throw new Error('Aucune tendance trouvée');
+    return res.json();
+  }
+
+  static async getVideos(id: string) {
+    const res = await fetch(`${TMDB_API_URL}/movie/${id}/videos?api_key=${TMDB_API_KEY}`, {
+      headers: {
+        Authorization: `Bearer ${TMDB_API_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+    });
+    if (!res.ok) throw new Error('Aucune vidéo trouvée');
+    return res.json();
+  }
+
+  static async getSimilar(id: string) {
+    const res = await fetch(`${TMDB_API_URL}/movie/${id}/similar?api_key=${TMDB_API_KEY}`, {
+      headers: {
+        Authorization: `Bearer ${TMDB_API_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+    });
+    if (!res.ok) throw new Error('Aucun film similaire trouvé');
+    return res.json();
+  }
 }

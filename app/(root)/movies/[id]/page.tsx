@@ -8,6 +8,11 @@ import { useMovieCredits } from '@/features/movie/hooks/use-movie-credits';
 import { Skeleton } from '@/shared/components/atoms/ui/skeleton';
 import Image from 'next/image';
 import Link from 'next/link';
+import { MovieRecommendations } from '@/features/movie/components/MovieRecommendations';
+import { TrendingMoviesSection } from '@/features/movie/components/TrendingMoviesSection';
+import { MovieVideosSection } from '@/features/movie/components/MovieVideosSection';
+import { MovieSimilarSection } from '@/features/movie/components/MovieSimilarSection';
+import { TmdbCast } from '@/features/movie/types/tmdb-credits';
 
 export default function MovieDetailPage({ params }: { params: Promise<{ id: string }> | { id: string } }) {
   let actualParams: { id: string };
@@ -86,7 +91,7 @@ export default function MovieDetailPage({ params }: { params: Promise<{ id: stri
           <Skeleton className="h-32 w-full" />
         ) : credits?.cast?.length ? (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {credits.cast.slice(0, 8).map((actor: any) => (
+            {credits.cast.slice(0, 8).map((actor: TmdbCast) => (
               <Link
                 key={actor.cast_id || actor.id}
                 href={`/movies/person/${actor.id}`}
@@ -111,6 +116,22 @@ export default function MovieDetailPage({ params }: { params: Promise<{ id: stri
         ) : (
           <div className="text-gray-500">Aucun acteur trouvé.</div>
         )}
+      </div>
+      <div className="max-w-3xl mx-auto mt-12">
+        <h2 className="text-xl font-bold mb-4">Recommandations</h2>
+        <MovieRecommendations movieId={Number(movie.id)} />
+      </div>
+      <div className="max-w-3xl mx-auto mt-12">
+        <h2 className="text-xl font-bold mb-4">Tendances</h2>
+        <TrendingMoviesSection />
+      </div>
+      <div className="max-w-3xl mx-auto mt-12">
+        <h2 className="text-xl font-bold mb-4">Bande-annonce</h2>
+        <MovieVideosSection movieId={movie.id} />
+      </div>
+      <div className="max-w-3xl mx-auto mt-12">
+        <h2 className="text-xl font-bold mb-4">Similaires</h2>
+        <MovieSimilarSection movieId={movie.id} />
       </div>
     </>
   );
