@@ -15,7 +15,6 @@ export default async function BaseLayout({ children }: RootLayoutProps) {
       <main>
         {children}
       </main>
-      <Footer variant="detailed" />
     </div>
   );
 }
